@@ -1,0 +1,49 @@
+
+README: CIGR_sync 
+
+This script automates transfers of a user specified set of data files to a Petashare site from a local or production machine. The script is also capable of attaching metadata for the simulation to the data.  
+
+The script uses pcommands to attach metadata and transfer files to a specified Petashare site. Pcommands must be installed and setup on the source machine to be used with CIGR account. (Please contact Dr. Allen for the credentials) 
+
+The latest version of Pcommands is available from
+
+ 
+
+http://www.cct.lsu.edu/~akturk/petashare/downloads/pcommands/pcommands-2.0.tar.gz.  
+
+Instructions to install pcommands are available at: 
+
+http://www.cct.lsu.edu/~akturk/petashare/pcommands-manual(2.0).php
+
+ 
+
+This script will work on any machine from which the Petashare sites can be accessed.  At present Petashare can be accessed from all the TeraGrid and LONI resources except for the Frost machine on the TeraGrid.  
+
+Usage: 
+
+CIGR_sync  -m <metadata file> -f <data file> -w <path to pcommands> 
+
+Where 
+
+<data file> is the path to the file containing a list of data files that are to be uploaded to the CIGR archive. Filenames can correspond to either single files or directories. If a directory is specified all the files in that directory will be uploaded. File names should be provided with one file per line separated by a new line character. This is a compulsory argument and can have comments starting with # 
+
+<metadata_file> is the path to the file containing metadata that should be attached to the archived data (It is not compulsory argument). Metadata must be provided in the format NAME=VALUE  
+
+There can be comments starting with #, however if the there are newline terminators in the VALUE it will not be attached. (This is will be modified soon ) 
+
+ <path to pcommands> can be used to indicate the path of Pcommands, if pcommands is not in the users path. 
+
+Upon execution the script creates a directory in the CIGR archive in Petashare (the directory name has the format TS_PID_USERNAME_HOSTNAME), attaches the metadata specified by metadata_file and transfers all the files specified in fileslist to it. 
+
+After each successful transfer the script will output the location of the log file for that transfer. If a transfer fails because of a network error or some other error restarting the script will prompt you to resume that transfer. It will not re-transfer if transfer failed due to a non-existing file. 
+
+To do: 
+
+    * provide interface/client tool for searching for and retrieving archived data
+    * optimize data transfer
+    * use stork scheduler instead of pcommands for data transfer
+
+ 
+
+Please report suggestions/bugs to sreekanth@cct.lsu.edu.
+
