@@ -1,7 +1,11 @@
 #!/bin/bash
 PROG_NAME=$(basename $0)
 
-pcommandspath=""
+h=$(finger spothn1 | awk -FDirectory: '{print $2}' | awk -FShell: '{print $1}')
+#echo $h | sed 's/ *$//g'
+
+pcommandspath=$(echo $h | sed 's/ *$//g')/pcommands-2.0/bin/
+
 if [ $# = 0 ]
 then
 	echo  "Usage: ${PROG_NAME}[ -m <metadata file> -f <files list> -w <pcommands path if pcommands not global> ]"
@@ -70,8 +74,10 @@ dir_name=$(date +%s_${$}_${user}_${machine})
 
 if [ ! -f "${env_name}.pcommandsEnv" ]
 then
-	echo "pcommands not set up or not installed"
-	echo "Please install pcommands and set it up for use with CIGR account before running the script"
+	echo "pcommands has not been set up"
+	
+#	${pcommandspath}pinit
+	echo "Please see README in at https://svn.einsteintoolkit.org/tools/trunk/petashare/README"
 	exit
 else
 	ps_user=$(awk < "${env_name}.pcommandsEnv" '{print $2}' | head -1) 2>/dev/null
@@ -218,7 +224,3 @@ then
 else
 	echo There were some unsuccessful transfers, please refer log for further details at ${env_name}.transferlog
 fi
-
-
-
-
