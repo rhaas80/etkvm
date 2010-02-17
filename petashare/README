@@ -3,21 +3,39 @@ README: CIGR_sync
 
 This script automates transfers of a user specified set of data files to a Petashare site from a local or production machine. The script is also capable of attaching metadata for the simulation to the data.  
 
-The script uses pcommands to attach metadata and transfer files to a specified Petashare site. Pcommands must be installed and setup on the source machine to be used with CIGR account. (Please contact Dr. Allen for the credentials) 
+The script uses pcommands to attach metadata and transfer files to a specified Petashare site.
+pcommands have been installed and have execute access user {home of that machine}/spothn1/pcommands-2.0
+If the user does not specify a local installation, the deafault installation will be used. How ever ever user has to set the enviroment variables before using the script. Setting the environment is discussed below in detail.
 
 The latest version of Pcommands is available from
-
- 
-
 http://www.cct.lsu.edu/~akturk/petashare/downloads/pcommands/pcommands-2.0.tar.gz.  
 
 Instructions to install pcommands are available at: 
-
 http://www.cct.lsu.edu/~akturk/petashare/pcommands-manual(2.0).php
 
- 
 
 This script will work on any machine from which the Petashare sites can be accessed.  At present Petashare can be accessed from all the TeraGrid and LONI resources except for the Frost machine on the TeraGrid.  
+
+Setting up pcommands environment (if user has not installed pcommands )
+
+    * Please create a .pcommands directory in your home
+    * Get the CIGR_environment file from svn( which is under petashare ) Change the name of the it to ".pcommandsEnv" and put the file inside the directory.
+    * run pinit from {path to pcommands on that machine} and enter password ( Please contact Dr.Allen for password ).
+
+To find path to pcommands on that machine please do the following:
+$finger spothn1
+
+This will provide information about the user "spothn1", the users home will be provided under Directory:
+append /pcommands-2.0/bin to it.
+
+
+ex:
+$ finger spothn1
+Login: spothn1                          Name: Sreekanth Pothanis
+Directory: /u/ac/spothn1                Shell: /bin/tcsh
+
+Now the path to pcommands will be /u/ac/spothn1/pcommands-2.0/
+
 
 Usage: 
 
@@ -31,7 +49,7 @@ Where
 
 There can be comments starting with #, however if the there are newline terminators in the VALUE it will not be attached. (This is will be modified soon ) 
 
- <path to pcommands> can be used to indicate the path of Pcommands, if pcommands is not in the users path. 
+<path to pcommands> can be used to indicate the path of Pcommands ifusers want to use a local installation of pcommands instead of the default installation. 
 
 Upon execution the script creates a directory in the CIGR archive in Petashare (the directory name has the format TS_PID_USERNAME_HOSTNAME), attaches the metadata specified by metadata_file and transfers all the files specified in fileslist to it. 
 
