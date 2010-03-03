@@ -1,0 +1,7 @@
+irodsUserName 'CIGR'
+irodsHost 'eric1.loni.org'
+irodsPort 1247
+irodsHome '/tempZone/home/CIGR'
+irodsCwd '/tempZone/home/CIGR'
+irodsDefResource 'eric1'
+irodsZone 'tempZone'
