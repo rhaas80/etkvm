@@ -4,6 +4,7 @@ use Text::BibTeX;
 use Date::Manip;
 use Pod::Usage;
 use Getopt::Long;
+use Data::Dumper;
 
 =head1 NAME 
 
@@ -13,10 +14,11 @@ parse_bibtex - parse bibtex file, and sort and/or filter it
 
 # parse command line options
 my $inputfilename = undef;
-my $status_s = undef;
 my $keys_s   = undef;
 my $sort     = undef;
 my $short    = undef;
+my $showkey  = undef;
+my $filter_s = undef;
 my $rsort    = undef;
 my $help     = undef;
 
@@ -27,10 +29,6 @@ my $help     = undef;
 =item B<--input=<filename>>
 
 Specify input file name
-
-=item B<--status=<list>>
-
-Filters for given 'status' fields
 
 =item B<--keys=<list>>
 
@@ -44,6 +42,14 @@ Sorts entries by 'receiveddate' field
 
 Only prints keys
 
+=item B<--filter=<list>>
+
+Filter entries with define keys in list
+
+=item B<--showkey=<key>>
+
+Only print entry key and given key value
+
 =item B<--help>
 
 Prints this help message and exits
@@ -51,22 +57,21 @@ Prints this help message and exits
 =cut
 
 GetOptions('input=s'     => \$inputfilename,
-           'status=s'    => \$status_s,
            'keys=s'      => \$keys_s,
            'sort'        => \$sort,
            'short'       => \$short,
+           'filter=s'    => \$filter_s,
+           'showkey=s'   => \$showkey,
            'reversesort' => \$rsort,
            'help'        => \$help,
           ) or pod2usage(-verbose=>2);
-if (defined($help)) {
+if (defined($help) or !defined($inputfilename)) {
   pod2usage(1);
 }
 
 if (defined($sort) and defined($rsort)) {
   die("The two options --sort and --reversesort cannot be used together.");
 }
-if (!defined($inputfilename)) { $inputfilename = "references.bib"; }
-print "-> $inputfilename\n";
 
 my $infile  = new Text::BibTeX::File $inputfilename;
 my @entries = ();
@@ -78,14 +83,27 @@ while ($entry = new Text::BibTeX::Entry $infile) {
   push(@entries, $entry);
 }
 # filter @entries
-if (defined($status_s)) {
-  my %status;
-  if ($status_s =~ /,/) {
-    %status = map {$_=>1} split(",", $status_s);
+if (defined($filter_s)) {
+  my %filter;
+  my @new_entries = ();
+  if ($filter_s =~ /,/) {
+    %filter = map {$_=~/([^=]*)=*(.*)/; $1=>$2} split(",", $filter_s);
   } else {
-    %status = map {$_=>1} split(" ", $status_s);
+    %filter = map {$_=~/([^=]*)=*(.*)/; $1=>$2} split(" ", $filter_s);
   }
-  @entries = grep {$status{$_->get('status')}} @entries;
+  #@entries = grep {$filter{$_->get('status')}} @entries;
+  # go through each specified filter key
+  foreach my $one_filter (keys(%filter)) {
+    # check if the key needs to be present or also have a certain value
+    if ($filter{$one_filter}) {
+      # only include entries with the key present and the value identical
+      @new_entries = (@new_entries, grep {$_->get($one_filter)eq$filter{$one_filter}} @entries);
+    } else {
+      # include entries which have the specified filter key present
+      @new_entries = (@new_entries, grep {$_->get($one_filter)} @entries);
+    }
+  }
+  @entries = @new_entries;
 }
 if (defined($keys_s)) {
   my %keys;
@@ -105,10 +123,12 @@ if (defined($rsort)) {
 }
 # generate output
 foreach my $entry (@entries) {
-  if (!defined($short)) {
-    $out .= $entry->print_s();
-  } else {
+  if (defined($short)) {
     $out .= $entry->key()."\n";
+  } elsif (defined($showkey)) {
+    $out .= $entry->key()." ".$entry->get($showkey)."\n";
+  } else {
+    $out .= $entry->print_s();
   }
 }
 print $out;
