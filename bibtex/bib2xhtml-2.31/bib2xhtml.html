@@ -1,0 +1,964 @@
+<!-- Creator     : groff version 1.19 -->
+<!-- CreationDate: Thu Feb  4 16:35:34 2010 -->
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+"http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta name="generator" content="groff -Thtml, see www.gnu.org">
+<meta http-equiv="Content-Type" content="text/html; charset=US-ASCII">
+<meta name="Content-Style" content="text/css">
+<title>BIB2XHTML</title>
+</head>
+<body>
+
+<h1 align=center>BIB2XHTML</h1>
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#OPTIONS">OPTIONS</a><br>
+<a href="#FILES">FILES</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
+<a href="#BUGS">BUGS</a><br>
+<a href="#AUTHORS">AUTHORS</a><br>
+<a href="#HISTORY">HISTORY</a><br>
+
+<hr>
+<a name="NAME"></a>
+<h2>NAME</h2>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>bib2xhtml - BibTeX bibliography to XHTML
+converter</p>
+</td>
+</table>
+<a name="SYNOPSIS"></a>
+<h2>SYNOPSIS</h2>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>bib2xhtml</b> [ <b>-a</b> ] [ <b>-b</b>
+<i>bibtex-options</i> ] [ <b>-c</b> ] [
+<b>-D</b> <i>mappings</i> ] [ <b>-d</b>
+<i>delimiter</i> ] [ <b>-e</b>
+<i>extended-information</i> ] [ <b>-h</b>
+<i>heading</i> ] [ <b>-i</b> ] [ <b>-k</b> ] [
+<b>-m</b> <i>macro-file</i> ] [ <b>-r</b> ] [
+<b>-s</b> <i>style</i> ] [ <b>-t</b> ] [
+<b>-v</b> ] [ <b>-u</b> ] <i>sourcefile</i> [
+<i>htmlfile</i> ]</p>
+</td>
+</table>
+<a name="DESCRIPTION"></a>
+<h2>DESCRIPTION</h2>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>bib2xhtml</b> converts a bibtex-format bibliography
+file to XHTML. <i>sourcefile</i> may be either a
+BibTeX-format bibliography (<b>.bib</b>) file or a
+LaTeX-fomatted bibliography auxillary file (<b>.aux</b>).
+<i>htmlfile</i> will often be just part of a larger XHTML
+file; <b>bib2xhtml</b> attempts to update the XHTML file in
+place. It does this by searching <i>htmlfile</i> for two
+special strings, which delimit the bibliography part of the
+file. These strings are the XHTML comments</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>&lt;!-- BEGIN BIBLIOGRAPHY <i>delimiter</i> --&gt;</p>
+<!-- INDENTATION -->
+<p>&lt;!-- END BIBLIOGRAPHY <i>delimiter</i> --&gt;</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>If these delimiters are found, the old bibliography
+between them is replaced with the new bibliography.
+Otherwise the new bibliography, with the appropriate
+delimiters, is appended to the end of <i>htmlfile</i>, and
+it will be necessary to move it to the proper location by
+hand. Note that it is possible for <i>htmlfile</i> to
+contain any number of bibliographies, and they may be
+updated independently. If no <i>htmlfile</i> is specified,
+the bibliography is written to standard output.</p>
+<!-- INDENTATION -->
+<p>The tag of each BibTeX bibliography entry is converted
+into a name anchor (&lt;A NAME=&quot;tag&quot;&gt;) in
+<i>htmlfile</i>, and may be used to construct a link to this
+particular entry.</p>
+<!-- INDENTATION -->
+<p>By default the contents of the bibliography are
+determined by the contents of the <i>sourcefile</i>. It is
+also possible to specify the contents of the bibliography in
+the <i>htmlfile</i> itself by setting the <b>-i</b>
+option and using two special strings to delimit the
+citations to be used for generating the bibliography. These
+strings are the XHTML comments</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>&lt;!-- BEGIN CITATIONS <i>delimiter</i> --&gt;</p>
+<!-- INDENTATION -->
+<p>&lt;!-- END CITATIONS <i>delimiter</i> --&gt;</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>If these delimiters are found, the contents between them
+are searched for XHTML comments containing the citations
+(one citation per line), for example</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>&lt;!-- BEGIN CITATIONS <i>delimiter</i> --&gt;</p>
+<!-- INDENTATION -->
+<p>&lt;!-- \citation{knuth:1997}<br>
+\citation{knuth:1984} --&gt;</p>
+<!-- INDENTATION -->
+<p>&lt;!-- END CITATIONS <i>delimiter</i> --&gt;</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>These citations are then used for choosing the
+bibliography entries from the <i>sourcefile</i>.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="5%"></td>
+<td width="95%">
+<p><b>Special Field Processing</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>Several BibTeX fields are treated specially. The
+filenames specified in the <b>postscript</b>, <b>pdf</b>,
+and <b>dvi</b> fields are relative to the <i>htmlfile</i>
+directory. In addition, <b>bib2xhtml</b> recognizes
+compressed or gzipped files (those with filenames ending in
+<b>.Z</b>, <b>.gz</b>, or <b>.z</b>).</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%">
+
+<p><b>url</b></p>
+</td>
+<td width="2%"></td>
+<td width="78%">
+
+<p>If the <b>url</b> field exists, a link
+(&lsquo;&lsquo;A&rsquo;&rsquo; tag) is created. The
+destination of the link is the <b>url</b> tag&rsquo;s value.
+The bibliography entry&rsquo;s title is the source of the
+link. This can be used to create a link to a XHTML version
+of the paper, or to a version that is available by ftp.</p>
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="9%">
+
+<p><b>mailto</b></p>
+</td>
+<td width="2%"></td>
+<td width="78%">
+
+<p>If the <b>mailto</b> field exists, a link
+(&lsquo;&lsquo;A&rsquo;&rsquo; tag) is created. The
+destination of the link is the <b>mailto</b> tag&rsquo;s
+value. The bibliography entry&rsquo;s author name is the
+source of the link.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>postscript</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>If the <b>postscript</b> field exists, its value is used
+as the name of a PostScript file. <b>bib2xhtml</b> creates a
+link to the file, and updates <i>htmlfile</i> with the
+number of pages and size of the PostScript file.</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="4%">
+
+<p><b>doi</b></p>
+</td>
+<td width="7%"></td>
+<td width="78%">
+
+<p>If the <b>doi</b> field exists, its value is used as the
+designation of a digital object identifier. <b>bib2xhtml</b>
+creates a link to the object through
+<i>http://dx.doi.org</i> and updates <i>htmlfile</i> with
+the <b>doi</b> as a hyperlink. The <b>doi</b> should
+normally be in a canonical form like the following:
+<i>doi:10.1145/363347.363387.</i> However, if the <b>doi</b>
+designator is formed as an HTTP hyperlink, it will be
+converted to the canonical form by replacing the HTTP
+protocol designation and the host name of the hyperlink with
+the <i>doi:</i> literal string.</p>
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="4%">
+
+<p><b>pdf</b></p>
+</td>
+<td width="7%"></td>
+<td width="78%">
+
+<p>If the <b>pdf</b> field exists, its value is used as the
+name of a PDF (portable document format) file.
+<b>bib2xhtml</b> creates a link to the file and updates
+<i>htmlfile</i> with the size of the PDF file.</p>
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="4%">
+
+<p><b>dvi</b></p>
+</td>
+<td width="7%"></td>
+<td width="78%">
+
+<p>If the <b>dvi</b> field exists, its value is used as the
+name of a TeX DVI file. <b>bib2xhtml</b> creates a link to
+the file and updates <i>htmlfile</i> with the number of
+pages and size of the DVI file.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>author</b>, <b>keywords</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>The full <b>author</b> and <b>keywords</b> fields of each
+BibTeX entry are included in <i>htmlfile</i> as XHTML
+comments, and may be used by CGI scripts (such as
+<b>bibsearch</b>, which is supplied) to select only certain
+entries.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="5%"></td>
+<td width="95%">
+<p><b>Hints</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>bib2xhtml</b>&rsquo;s LaTeX to XHTML conversion is not
+very smart. If something isn&rsquo;t being converted
+correctly, try doing it in a different way.</p>
+<!-- INDENTATION -->
+<p><b>bib2xhtml</b> does not currently understand
+<i>\verb</i>. To get a tilde into a filename or an embedded
+URL, use <i>\~{}</i>. On the other hand, entries containing
+<i>URL</i> fields or <i>\url{}</i> commands, are correctly
+converted into hyperlinks. Leave such hyperlinks as they
+are; do not embed any LaTeX commands in them.</p>
+<!-- INDENTATION -->
+<p>The lists that <b>bib2xhtml</b> generates contain CSS
+hooks of the class <i>bib2xhtml</i>. You can therefore
+modify the appearance of the lists by adding style entries
+like the following in the web page&rsquo;s header.</p>
+<!-- INDENTATION -->
+<pre>       &lt;style type=&quot;text/css&quot;&gt;
+            dl.bib2xhtml dd { padding-bottom: 1em }
+       &lt;/style&gt;
+
+       &lt;style type=&quot;text/css&quot;&gt;
+            ul.bib2xhtml li { padding-bottom: 1em }
+       &lt;/style&gt;
+</pre>
+<!-- INDENTATION -->
+<p>The value of the named attributes can contain arbitrary
+HTML markup commands, and can thus be used for substituting
+the text with icons. For example, the following Unix command
+can be used for creating stand-alone PDF icons.</p>
+<!-- INDENTATION -->
+<pre>    perl bib2xhtml -e &rsquo;nosize,nopages,PDF:&lt;img src=&quot;pdficon_small.gif&quot;
+      alt=&quot;PDF&quot; border=&quot;0&quot; /&gt;&rsquo; example.bib example.html
+</pre>
+<!-- INDENTATION -->
+<p>Unser the Windows shell the corresponding command would
+be.</p>
+<!-- INDENTATION -->
+<pre>    perl bib2xhtml -e &quot;nosize,nopages,PDF:&lt;img src=&rsquo;pdficon_small.gif&rsquo;
+      alt=&rsquo;PDF&rsquo; border=&rsquo;0&rsquo; /&gt;&quot; example.bib example.html
+</pre>
+<!-- INDENTATION -->
+<p>A couple of PDF icons and the conditions for their use
+are available at
+<i>http://www.adobe.com/misc/linking.html#pdficon .</i></p>
+<!-- INDENTATION -->
+<p>To display the number of pages in local PDF files, the
+Perl module <i>PDF::API2</i> must be installed on the system
+where <b>bib2xhtml</b> is running. A command like the
+following will accomplish this.</p>
+<!-- INDENTATION -->
+<pre>    perl -MCPAN -e &quot;install PDF::API2&quot;
+</pre>
+</td>
+</table>
+<a name="OPTIONS"></a>
+<h2>OPTIONS</h2>
+<!-- TABS -->
+
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-a</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>Include the BibTeX file&rsquo;s abstract field in the
+bibliography.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>-b</b> <i>bibtex-options</i></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>Provide the specified options to the BibTeX program.</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-c</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>Sort chronologically. Normally, the bibliography is
+ordered first by author and then by year. With this option,
+the bibliography is ordered by year and then author.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>-d</b> <i>delimiter</i></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>Specify the delimiter that sets the bibliography off from
+the rest of the XHTML file. The default delimiter is the
+name of the bibliography file with the <b>.bib</b> extension
+stripped.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>-D</b> <i>mappings</i></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>Define URL to directory mappings. The <i>mappings</i>
+argument contains a sequence of comma-separated values. Each
+value contains a local file path and the corresponding URL,
+separated by an <i>@</i> sign. The resulting URL is used for
+linking the various paper file format types.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>-e</b> <i>extended-information</i></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>Specify how an entry&rsquo;s extended information will be
+displayed. The extended information is specified as a series
+of comma-separated attributes. The following plain
+attributes are supported.</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="9%">
+
+<p><b>notype</b></p>
+</td>
+<td width="1%"></td>
+<td width="68%">
+
+<p>Do not display the file&rsquo;s type (PDF, Postscript,
+DVI).</p>
+</td>
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="9%">
+
+<p><b>nosize</b></p>
+</td>
+<td width="1%"></td>
+<td width="68%">
+
+<p>Do not display the file&rsquo;s size in bytes.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p><b>nopages</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="32%"></td>
+<td width="68%">
+<p>Do not display the file&rsquo;s number of pages.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p><b>nocompression</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="32%"></td>
+<td width="68%">
+<p>Do not display the file&rsquo;s compression type.</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="5" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="7%">
+
+<p><b>nodoi</b></p>
+</td>
+<td width="3%"></td>
+<td width="46%">
+
+<p>Do not display the file&rsquo;s DOI.</p>
+</td>
+<td width="22%">
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p><b>nobrackets</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="32%"></td>
+<td width="68%">
+<p>Do not enclose the DOI link or the file&rsquo;s extended
+information in brackets.</p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>A number of valued attributes allow the specification of
+the text to display for various file types. These are
+written as a <i>name</i>:<i>value</i> pair. The following
+names are supported for valued attributes.</p></td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="5" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="1%">
+
+<p>&#8226;</p>
+</td>
+<td width="9%"></td>
+<td width="16%">
+
+<p>PostScript</p>
+</td>
+<td width="52%">
+</td>
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="1%">
+
+<p>&#8226;</p>
+</td>
+<td width="9%"></td>
+<td width="16%">
+
+<p>PDF</p>
+</td>
+<td width="52%">
+</td>
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="1%">
+
+<p>&#8226;</p>
+</td>
+<td width="9%"></td>
+<td width="16%">
+
+<p>DVI</p>
+</td>
+<td width="52%">
+</td>
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="1%">
+
+<p>&#8226;</p>
+</td>
+<td width="9%"></td>
+<td width="16%">
+
+<p>DOI</p>
+</td>
+<td width="52%">
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>-h</b> <i>heading</i> Use the string
+<i>heading</i> instead of the default title when creating a
+new <i>htmlfile</i>. If updating an existing
+<i>htmlfile</i>, this option is ignored.</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-i</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>The citations are included in the <i>htmlfile</i>. When
+this option is set, the <i>sourcefile</i> must be a .bib
+file.</p>
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-k</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>In labeled styles (<b>alpha</b>, <b>named</b>,
+<b>plain</b>, and <b>unsort</b>) append to the label of each
+entry its BibTeX key. Thus, the label of each entry will
+consist of the original label, followed by an em-dash,
+followed by the BibTeX key.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>-m</b> <i>macro file</i></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>Specify a BibTeX macro file to supply to BibTeX when
+processing the bibliography file. Macro files typically
+contain local abbreviations and other macro definitions.</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-r</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>Reverse the chronological sorting order. Normally, the
+bibliography is sorted (by year; BibTeX ignores the month)
+from the earliest entry to the latest entry. With this
+option, the order is reversed. Note that to obtain a
+bibliography ordered by chronological order you must also
+specify the <b>-c</b> option.</p>
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>-s</b> <i>style</i></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="22%"></td>
+<td width="78%">
+<p>Create a <i>style</i>-style bibliography. Supported
+styles are <b>empty</b> (the default), <b>plain</b>,
+<b>alpha</b>, <b>named</b>, <b>paragraph</b>, <b>unsort</b>,
+and <b>unsortlist</b>. An <b>empty</b> bibliography is a
+bulleted list. A <b>plain</b> bibliography is a numbered
+list. <b>paragraph</b> produces just paragraphs (no
+bullets). <b>unsort</b> is like <b>plain</b> except that the
+entries in the XHTML file are in the same order as as they
+are in the source file. <b>unsortlist</b> is like
+<b>unsort</b> but entry labels are bullets instead of
+numbers. An <b>alpha</b> bibliography has labels that are in
+the BibTeX alpha style. A <b>named</b> bibliography has
+labels of the form [name, year].</p>
+</td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-t</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>Write a timestamp with the date at which the
+bibliography was updated to <i>htmlfile</i>.</p>
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-v</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>Report version number on stderr.</p>
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="3%">
+
+<p><b>-u</b></p>
+</td>
+<td width="8%"></td>
+<td width="78%">
+
+<p>Convert LaTeX special characters into the corresponding
+Unicode characters, and output XML coded in UTF-8. The
+output produced by this option may be easier to parse and
+validate with some XML parsers. By default LaTeX special
+characters are converted into HTML character entities.</p>
+</td>
+</table>
+<a name="FILES"></a>
+<h2>FILES</h2>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="5" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="15%">
+
+<p><b>html-a.bst</b></p>
+</td>
+<td width="6%"></td>
+<td width="46%">
+
+<p>alpha XHTML BibTeX style file</p>
+</td>
+<td width="22%">
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="15%">
+
+<p><b>html-n.bst</b></p>
+</td>
+<td width="6%"></td>
+<td width="46%">
+
+<p>named XHTML BibTeX style file</p>
+</td>
+<td width="22%">
+</td>
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="15%">
+
+<p><b>html-u.bst</b></p>
+</td>
+<td width="6%"></td>
+<td width="46%">
+
+<p>unsort XHTML BibTeX style file</p>
+</td>
+<td width="22%">
+</td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>html-aa.bst</b>, <b>html-na.bst</b>,
+<b>html-ua.bst</b></p></td>
+</table>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="32%"></td>
+<td width="68%">
+<p>versions of the above style files with abstracts</p></td>
+</table>
+<!-- TABS -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="4" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="14%">
+
+<p><b>bibsearch</b></p>
+</td>
+<td width="7%"></td>
+<td width="68%">
+
+<p>a CGI script for performing bibliography searches</p>
+</td>
+</table>
+<a name="SEE ALSO"></a>
+<h2>SEE ALSO</h2>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p><b>perl</b>(L), <b>bibtex</b>(L).</p>
+</td>
+</table>
+<a name="BUGS"></a>
+<h2>BUGS</h2>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>The LaTeX to XHTML translation, while decent, is not
+perfect.</p>
+<!-- INDENTATION -->
+<p>Requires bibtex and perl. However, I think that most
+sites that would want to convert BibTeX to XHTML will
+already have both programs installed.</p>
+<!-- INDENTATION -->
+<p>Relies on dviselect to count the number of pages in a DVI
+file.</p>
+</td>
+</table>
+<a name="AUTHORS"></a>
+<h2>AUTHORS</h2>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>David Hull while at the University of Illinois at
+Urbana-Champaign.</p>
+<!-- INDENTATION -->
+<p>Diomidis Spinellis (<i>dds@aueb.gr</i>), Athens
+University of Economics and Business.</p>
+</td>
+</table>
+<a name="HISTORY"></a>
+<h2>HISTORY</h2>
+<!-- INDENTATION -->
+<table width="100%" border=0 rules="none" frame="void"
+       cols="2" cellspacing="0" cellpadding="0">
+<tr valign="top" align="left">
+<td width="11%"></td>
+<td width="89%">
+<p>The program was originally written as <b>bib2html</b> by
+David Hull in 1996, who maintained it until 1998 (version
+1.33). In 2002, due to the lack of visible updates on the
+web, the program was adopted for maintenance, distribution,
+and further evolution by Diomidis Spinellis. Changes made by
+him include support for XHTML 1.0 and documentation bug
+fixes. The first public release of the maintenance effort
+was in 2004 (version 2.1). On March 2004 the program was
+renamed into <b>bib2xhtml</b> to avoid confusion with
+projects using the name <b>bib2html .</b> Panos Louridas
+(<i>louridas@aueb.gr</i>) added the functionality for
+including the citations in the <i>htmlfile .</i></p>
+<!-- INDENTATION -->
+<p>See <i>http://www.spinellis.gr/sw/textproc/bib2xhtml</i>
+for the latest version. This is free software, and may be
+modified or redistributed under the terms of the GNU Public
+License.</p>
+</td>
+</table>
+<hr>
+</body>
+</html>
