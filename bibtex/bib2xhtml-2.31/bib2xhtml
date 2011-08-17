@@ -47,7 +47,10 @@ $list_end[$LABEL_PARAGRAPH] = "/div";
 
 @tmpfiles = ();
 
-$ENV{'BSTINPUTS'} = '/var/www/einstein/live/bibtex/bib2xhtml-2.31';
+if (-d "/var/www/einstein/live/bibtex/bib2xhtml-2.31") {
+  $ENV{'BSTINPUTS'} = '/var/www/einstein/live/bibtex/bib2xhtml-2.31'; }
+if (-d "/home/knarf/codes/svn.einsteintoolkit.org/www/bibtex") {
+  $ENV{'BSTINPUTS'} = '/home/knarf/codes/svn.einsteintoolkit.org/www/bibtex/bib2xhtml-2.31'; }
 
 sub usage {
     $program = $0;
