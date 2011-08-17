@@ -74,6 +74,7 @@ if (defined($sort) and defined($rsort)) {
 }
 
 my $infile  = new Text::BibTeX::File $inputfilename;
+$infile->set_structure('Bib');
 my @entries = ();
 my $out     = "";
 
