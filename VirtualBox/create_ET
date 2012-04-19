@@ -30,7 +30,7 @@ VBoxManage createvm --name $RELEASE --register
 VBoxManage modifyvm      $RELEASE --ostype Debian_64 --acpi on --memory 1024 --cpus 1 --biosbootmenu disabled 
 VBoxManage storagectl    $RELEASE --name "IDE Controller" --add ide --controller PIIX4
 VBoxManage storagectl    $RELEASE --name "SATA Controller" --add sata --controller IntelAhci
-VBoxManage storageattach $RELEASE --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium ./$RELEASE.iso
+VBoxManage storageattach $RELEASE --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium `pwd`/$RELEASE.iso
 VBoxManage createhd --filename $RELEASE.vdi --size 32768
 VBoxManage storageattach $RELEASE --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium $RELEASE.vdi
 VBoxManage modifyvm      $RELEASE --nic1 nat --nictype1 82540EM 
