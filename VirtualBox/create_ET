@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+RELEASE=$1
+if [ ! -f install_$RELEASE ] ; then
+  echo "You need to specify a release and the file install_\$RELEASE needs to be present.";
+  exit 1
+fi
+
+CD_DST=debian_$RELEASE
+rm -rf $CD_DST
+mkdir $CD_DST
+wget -N http://cdimage.debian.org/debian-cd/6.0.4/amd64/iso-cd/debian-6.0.4-amd64-netinst.iso
+bsdtar -C $CD_DST -xf debian-6.0.4-amd64-netinst.iso
+chmod -R +w $CD_DST
+cd $CD_DST
+perl -pi -e 's/initrd\.gz/initrd\.gz auto-install\/enable=true preseed\/file=\/cdrom\/preseed.cfg/'  isolinux/txt.cfg
+perl -pi -e 's/timeout 0/timeout 1/' isolinux/isolinux.cfg
+cp ../preseed.cfg ../postseed .
+mkdir et_misc
+if [ "X$RELEASE" = "XET_2011_10" ]; then
+  cp ../et.cfg et_misc/
+fi
+cp ../install_$RELEASE ../late_commands.sh et_misc/
+md5sum `find ! -name "md5sum.txt" ! -path "./isolinux/*" -follow -type f` > md5sum.txt
+cd ..
+genisoimage -o $RELEASE.iso -r -J -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin -c isolinux/boot.cat $CD_DST
+rm -rf $CD_DST
+
+VBoxManage createvm --name $RELEASE --register
+VBoxManage modifyvm      $RELEASE --ostype Debian_64 --acpi on --memory 1024 --cpus 1 --biosbootmenu disabled 
+VBoxManage storagectl    $RELEASE --name "IDE Controller" --add ide --controller PIIX4
+VBoxManage storagectl    $RELEASE --name "SATA Controller" --add sata --controller IntelAhci
+VBoxManage storageattach $RELEASE --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium ~/vm/$RELEASE.iso
+VBoxManage createhd --filename $RELEASE.vdi --size 32768
+VBoxManage storageattach $RELEASE --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium $RELEASE.vdi
+VBoxManage modifyvm      $RELEASE --nic1 nat --nictype1 82540EM 
+VBoxManage modifyvm      $RELEASE --audio alsa
+VBoxManage startvm       $RELEASE

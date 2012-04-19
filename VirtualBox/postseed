@@ -1,0 +1,16 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:       postseed
+# Required-Start: $local_fs $remote_fs
+# Required-Stop:
+# X-Start-Before:
+# Default-Start:  2 3 4 5
+# Default-Stop:
+### END INIT INFO
+
+chown -R et /home/et/misc
+chgrp -R et /home/et/misc
+chmod -R +w  /home/et/misc
+sudo -i -u et /home/et/misc/install_ET_* 2>&1 | tee /var/log/ET_install
+update-rc.d postseed remove

@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+perl -le 'printf "MPD_SECRETWORD=";print map { ("a".."z","A".."Z")[rand 52] } 1..40' > $HOME/.mpd.conf
+chmod 600 $HOME/.mpd.conf
+
+RELEASE=ET_2011_10
+wget --no-check-certificate https://github.com/gridaphobe/CRL/raw/$RELEASE/GetComponents
+chmod +x GetComponents
+./GetComponents -p -a http://svn.einsteintoolkit.org/manifest/branches/$RELEASE/einsteintoolkit.th
+cd Cactus
+./simfactory/bin/sim setup-silent
+echo "thornlist       = thornlists/einsteintoolkit.th" >> ./simfactory/etc/defs.local.ini
+cp ../misc/et.cfg ./simfactory/mdb/optionlists/
+perl -pi -e 's/^(optionlist\s*=\s*)generic.cfg/$1et.cfg/' ./simfactory/mdb/machines/et-vm-debian.*
+mkdir ~/simulations
+set +e
+./simfactory/bin/sim build
+set -e
+make sim
+./simfactory/bin/sim create-run tests_1 --testsuite --procs 1
+#./simfactory/bin/sim create-run tests_2 --testsuite --procs 2
+
