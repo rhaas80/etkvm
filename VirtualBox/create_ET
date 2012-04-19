@@ -20,7 +20,7 @@ mkdir et_misc
 if [ "X$RELEASE" = "XET_2011_10" ]; then
   cp ../et.cfg et_misc/
 fi
-cp ../install_$RELEASE ../late_commands.sh et_misc/
+cp ../install_$RELEASE et_misc/
 md5sum `find ! -name "md5sum.txt" ! -path "./isolinux/*" -follow -type f` > md5sum.txt
 cd ..
 genisoimage -o $RELEASE.iso -r -J -no-emul-boot -boot-load-size 4 -boot-info-table -b isolinux/isolinux.bin -c isolinux/boot.cat $CD_DST
