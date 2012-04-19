@@ -6,6 +6,6 @@ if [ ! -f install_$RELEASE ] ; then
 fi
 VBoxManage storageattach $RELEASE --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium none
 VBoxManage storageattach $RELEASE --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium none
-VBoxManage closemedium dvd ~/vm/$RELEASE.iso
+VBoxManage closemedium dvd ./$RELEASE.iso
 VBoxManage closemedium disk --delete HardDisks/$RELEASE.vdi
 VBoxManage unregistervm $RELEASE --delete
