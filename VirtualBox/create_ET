@@ -9,8 +9,8 @@ fi
 CD_DST=debian_$RELEASE
 rm -rf $CD_DST
 mkdir $CD_DST
-wget -N http://cdimage.debian.org/debian-cd/6.0.4/amd64/iso-cd/debian-6.0.4-amd64-netinst.iso
-bsdtar -C $CD_DST -xf debian-6.0.4-amd64-netinst.iso
+wget -N http://cdimage.debian.org/debian-cd/7.0.0/amd64/iso-cd/debian-7.0.0-amd64-netinst.iso
+bsdtar -C $CD_DST -xf debian-7.0.0-amd64-netinst.iso
 chmod -R +w $CD_DST
 cd $CD_DST
 perl -pi -e 's/initrd\.gz/initrd\.gz auto-install\/enable=true preseed\/file=\/cdrom\/preseed.cfg/'  isolinux/txt.cfg

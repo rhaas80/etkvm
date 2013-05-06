@@ -7,13 +7,11 @@ chmod 600 $HOME/.mpd.conf
 wget --no-check-certificate https://github.com/gridaphobe/CRL/raw/master/GetComponents
 chmod +x GetComponents
 ./GetComponents -p -a http://svn.einsteintoolkit.org/manifest/trunk/einsteintoolkit.th
-mkdir simulations
+mkdir ~/simulations
 cd Cactus
-./simfactory/bin/sim setup-silent --optionlist=debian.cfg
-set +e
+./simfactory/bin/sim setup-silent --optionlist=debian.cfg --submitscript=debian.sub --runscript=without.run
 ./simfactory/bin/sim build --thornlist=./thornlists/einsteintoolkit.th
-set -e
 make sim
-./simfactory/bin/sim create-run tests_1 --testsuite --procs 1
-#./simfactory/bin/sim create-run tests_2 --testsuite --procs 2
+./simfactory/bin/sim create-submit tests_1 --testsuite --procs 1
+#./simfactory/bin/sim create-submit tests_2 --testsuite --procs 2
 
