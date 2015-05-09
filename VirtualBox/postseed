@@ -12,5 +12,7 @@
 chown -R et /home/et/misc
 chgrp -R et /home/et/misc
 chmod -R +w  /home/et/misc
+# give the system time to get network up
+sleep 5
 sudo -i -u et /home/et/misc/install_ET_* 2>&1 | tee /var/log/ET_install
 update-rc.d postseed remove

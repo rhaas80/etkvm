@@ -4,12 +4,12 @@ set -e
 perl -le 'printf "MPD_SECRETWORD=";print map { ("a".."z","A".."Z")[rand 52] } 1..40' > $HOME/.mpd.conf
 chmod 600 $HOME/.mpd.conf
 
-wget --no-check-certificate https://github.com/gridaphobe/CRL/raw/master/GetComponents
+wget -c --no-check-certificate https://github.com/gridaphobe/CRL/raw/master/GetComponents
 chmod +x GetComponents
-./GetComponents -p -a http://svn.einsteintoolkit.org/manifest/trunk/einsteintoolkit.th
-mkdir ~/simulations
+./GetComponents -p -a https://bitbucket.org/einsteintoolkit/manifest/raw/master/einsteintoolkit.th
+mkdir -p ~/simulations
 cd Cactus
-./simfactory/bin/sim setup-silent --optionlist=debian.cfg --submitscript=debian.sub --runscript=without.run
+./simfactory/bin/sim setup-silent --optionlist=debian.cfg --submitscript=debian.sub
 ./simfactory/bin/sim build --thornlist=./thornlists/einsteintoolkit.th
 make sim
 ./simfactory/bin/sim create-submit tests_1 --testsuite --procs 1
