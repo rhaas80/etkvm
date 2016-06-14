@@ -16,7 +16,7 @@ logic_cores=`cat /proc/cpuinfo | grep "model name" | wc -l`
 fake_cores_per_core=`cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l`
 cores=$((($logic_cores-$fake_cores_per_core)/$fake_cores_per_core+1))
 
-./simfactory/bin/sim setup-silent --optionlist=debian.cfg --ppn=$cores --submitscript=debian.sub --runscript=without.run
+./simfactory/bin/sim setup-silent --optionlist=debian.cfg --ppn=$cores --submitscript=debian.sub --runscript=debian.sh
 mkdir -p ~/simulations
 set +e
 time ./simfactory/bin/sim build --thornlist ./thornlists/einsteintoolkit.th 2>&1 | tee ET_build.log
