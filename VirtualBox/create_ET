@@ -9,8 +9,11 @@ fi
 #DIST=wheezy
 #URL=http://cdimage.debian.org/mirror/cdimage/archive/7.8.0/amd64/iso-cd/debian-7.8.0-amd64-netinst.iso
 
-DIST=jessie
-URL=http://cdimage.debian.org/debian-cd/8.5.0/amd64/iso-cd/debian-8.5.0-amd64-netinst.iso
+#DIST=jessie
+#URL=http://cdimage.debian.org/debian-cd/8.7.1/i386/iso-cd/debian-8.7.1-i386-netinst.iso
+
+DIST=stretch
+URL=https://cdimage.debian.org/debian-cd/current/i386/iso-cd/debian-9.0.0-i386-netinst.iso
 
 #DIST=trusty
 #URL=http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/netboot/mini.iso
@@ -26,11 +29,14 @@ if [ -d $CD_DST/isolinux ]; then
   ISOLINUX=isolinux/
 fi
 cd $CD_DST
+
+# debian stretch defaults to a gfx based install
 perl -pi -e 's/initrd\.gz/initrd\.gz auto-install\/enable=true debconf\/priority=critical preseed\/file=\/cdrom\/preseed.cfg/'  ${ISOLINUX}txt.cfg
+perl -pi -e 's/initrd\.gz/initrd\.gz auto-install\/enable=true debconf\/priority=critical preseed\/file=\/cdrom\/preseed.cfg/'  ${ISOLINUX}gtk.cfg
 perl -pi -e 's/timeout 0/timeout 1/' ${ISOLINUX}isolinux.cfg
-cp ../preseed.cfg ../postseed .
-mkdir et_misc
-cp ../install_$RELEASE et_misc/
+cp ../preseed.cfg ../late_command.sh ../postseed .
+
+cp ../data/*.tar ./
 md5sum `find ! -name "md5sum.txt" ! -path "./isolinux/*" -follow -type f` > md5sum.txt
 
 # Ubuntu's mini.iso does not mount the iso image itself during installation, so we have to
@@ -52,13 +58,14 @@ rm -rf $CD_DST
 
 VMNAME=${DIST}_$RELEASE
 
+VBoxManage unregistervm $VMNAME --delete || true
 VBoxManage createvm --name $VMNAME --register
 
 # standard settings
-VBoxManage modifyvm      $VMNAME --ostype Debian_64 --acpi on --biosbootmenu disabled --rtcuseutc on
+VBoxManage modifyvm      $VMNAME --ostype Debian --acpi on --biosbootmenu disabled --rtcuseutc on
 
 ### minimal system
-VBoxManage modifyvm      $VMNAME --memory 1024 --cpus 1
+VBoxManage modifyvm      $VMNAME --memory 1024 --cpus 1 --vram 32
 
 ### workstation class
 #VBoxManage modifyvm      $VMNAME --memory 4096 --cpus 8 --ioapic on --vram 64 --usb on
@@ -67,10 +74,22 @@ VBoxManage modifyvm      $VMNAME --memory 1024 --cpus 1
 VBoxManage storagectl    $VMNAME --name "IDE Controller" --add ide --controller PIIX4
 VBoxManage storagectl    $VMNAME --name "SATA Controller" --add sata --controller IntelAhci
 VBoxManage storageattach $VMNAME --storagectl "IDE Controller" --port 0 --device 0 --type dvddrive --medium `pwd`/$VMNAME.iso
+# we limit the partition to 8GB initially and offer the user the option to
+# increase it to the full size
 VBoxManage createhd --filename $VMNAME.vdi --size 32768
-VBoxManage storageattach $VMNAME --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium $VMNAME.vdi
-VBoxManage modifyvm      $VMNAME --nic1 nat --nictype1 82540EM 
-VBoxManage modifyvm      $VMNAME --natpf1 "ssh,tcp,,2222,,22"
+VBoxManage storageattach $VMNAME --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium $VMNAME.vdi --discard on
+VBoxManage modifyvm      $VMNAME --nic1 nat --nictype1 virtio --cableconnected1 on
+VBoxManage modifyvm      $VMNAME --natpf1 "ssh,tcp,127.0.0.1,2222,,22"
+# this does likely not work since it is a privileged port and Windows cannot connect to any other
+VBoxManage modifyvm      $VMNAME --natpf2 "smb,tcp,127.0.0.1,415,,415"
+# use for SMB share inside of VM
+# cannot be used since ti aborts unless the users does something else first
+# VBoxManage modifyvm      $VMNAME --nic2 hostonly --nictype2 virtio --cableconnected2 on --hostonlyadapter2 vboxnet0
 VBoxManage modifyvm      $VMNAME --audio alsa
+VBoxManage modifyvm      $VMNAME --clipboard bidirectional
 VBoxManage modifyvm      $VMNAME --boot1 disk --boot2 dvd --boot3 net --boot4 none
 VBoxManage startvm       $VMNAME
+
+VBoxManage modifyhd --compact $VMNAME.vdi
+rm -f $VMNAME.ova
+VBoxManage export $VMNAME --output $VMNAME.ova

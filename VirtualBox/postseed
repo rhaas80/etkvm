@@ -9,10 +9,52 @@
 # Default-Stop:
 ### END INIT INFO
 
-chown -R et /home/et/misc
-chgrp -R et /home/et/misc
-chmod -R +w  /home/et/misc
-# give the system time to get network up
-sleep 5
-sudo -i -u et /home/et/misc/install_ET_* 2>&1 | tee /var/log/ET_install
+# purge packages only needed to compile virtualbox module
+apt-get install -y linux-headers-686-pae virtualbox-guest-dkms/sid virtualbox-guest-utils/sid virtualbox-guest-x11/sid
+apt-get remove -y --purge linux-headers-686-pae
+apt-get autoremove -y --purge
+apt-get autoclean
+apt-get clean
+
 update-rc.d postseed remove
+
+# install ET 2016_11, do this after isntallation finishes so that eg network is
+# correct
+sudo -u et bash <<"EOF"
+cd /home/et
+
+RELEASE=master
+wget --no-check-certificate https://github.com/gridaphobe/CRL/raw/$RELEASE/GetComponents
+chmod +x GetComponents
+./GetComponents -p -a --shallow https://bitbucket.org/einsteintoolkit/manifest/raw/$RELEASE/einsteintoolkit.th
+cd Cactus
+
+# reduce build time and redce file sizes by leaving out big thorns and making
+# sure that system libraries are used
+sed 's!^CactusUtils/Formaline!!#DISABLED &!' manifest/einsteintoolkit.th >thornlists/et.th
+cp simfactory/mdb/optionlists/debian.cfg simfactory/mdb/optionlists/et.cfg
+echo "PAPI_DIR=NO_BUILD" >>simfactory/mdb/optionlists/et.cfg
+
+# figure out how many cores we have
+logic_cores=`cat /proc/cpuinfo | grep "model name" | wc -l`
+fake_cores_per_core=`cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l`
+cores=$((($logic_cores-$fake_cores_per_core)/$fake_cores_per_core+1))
+
+./simfactory/bin/sim setup-silent --optionlist=et.cfg --ppn=$cores --submitscript=debian.sub --runscript=debian.sh
+mkdir -p ~/simulations
+set +e
+( time ./simfactory/bin/sim build --mdbkey make "make -j $cores" --thornlist ./thornlists/et.th ) >ET_build.log 2>&1
+set -e
+find configs/sim \( -name \*.a -or -name \*.d \) -delete
+rm -rf exe/sim exe/cactus_sim configs/sim/piraha
+
+cd /home/et
+cp -r --reflink=always Cactus Cactus.original
+EOF
+
+# wipe unused blocks to zero
+dd if=/dev/zero bs=1M of=/zero
+sync ; sync ; sync
+rm /zero
+
+shutdown -h now
