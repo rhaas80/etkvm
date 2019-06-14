@@ -15,8 +15,16 @@ echo -e 'auto eth1\niface eth1 inet dhcp' >>/target/etc/network/interfaces
 
 # prepare to make enlarging the partition possible
 # we need to remove the dummy partition we created to make partman happy
-umount /dev/sda2 ; sed -i '/delme/d' /target/etc/fstab ; rmdir /target/home/et/delme
-sfdisk /dev/sda --dump | awk '/sda1/{start=$4;size=$6} /sda2/{$1="/dev/sda1";$4=start;$6=($6+size)",";print} {next}' | sfdisk --force /dev/sda
+# there must a be reboot between this and an attempt to resize the FS
+sed -i '/delme/d' /target/etc/fstab
+umount /dev/sda2
+rmdir /target/home/et/delme
+
+chroot /target /bin/bash <<"EOF"
+/sbin/sfdisk /dev/sda --dump | \
+awk '/sda1/{start=$4;size=$6} /sda2/{$1="/dev/sda1";$4=start;$6=($6+size)",";print} {next}' | \
+/sbin/sfdisk --force /dev/sda
+EOF
 
 # don't ask for passwd for et user to become root
 sed -i '/^%sudo/s!ALL$!NOPASSWD: ALL!' /target/etc/sudoers

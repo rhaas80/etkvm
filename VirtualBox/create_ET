@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 RELEASE=$1
-if [ ! -f install_$RELEASE ] ; then
-  echo "You need to specify a release and the file install_\$RELEASE needs to be present.";
-  exit 1
-fi
+#if [ ! -f install_$RELEASE ] ; then
+#  echo "You need to specify a release and the file install_\$RELEASE needs to be present.";
+#  exit 1
+#fi
 
 #DIST=wheezy
 #URL=http://cdimage.debian.org/mirror/cdimage/archive/7.8.0/amd64/iso-cd/debian-7.8.0-amd64-netinst.iso
@@ -13,7 +13,7 @@ fi
 #URL=http://cdimage.debian.org/debian-cd/8.7.1/i386/iso-cd/debian-8.7.1-i386-netinst.iso
 
 DIST=stretch
-URL=https://cdimage.debian.org/debian-cd/current/i386/iso-cd/debian-9.0.0-i386-netinst.iso
+URL=https://cdimage.debian.org/debian-cd/current/i386/iso-cd/debian-9.1.0-i386-netinst.iso
 
 #DIST=trusty
 #URL=http://archive.ubuntu.com/ubuntu/dists/trusty-updates/main/installer-amd64/current/images/netboot/mini.iso
@@ -65,10 +65,10 @@ VBoxManage createvm --name $VMNAME --register
 VBoxManage modifyvm      $VMNAME --ostype Debian --acpi on --biosbootmenu disabled --rtcuseutc on
 
 ### minimal system
-VBoxManage modifyvm      $VMNAME --memory 1024 --cpus 1 --vram 32
+#VBoxManage modifyvm      $VMNAME --memory 1024 --cpus 1 --vram 32
 
 ### workstation class
-#VBoxManage modifyvm      $VMNAME --memory 4096 --cpus 8 --ioapic on --vram 64 --usb on
+VBoxManage modifyvm      $VMNAME --memory 4096 --cpus 12 --ioapic on --vram 64
 
 # rest of standard settings
 VBoxManage storagectl    $VMNAME --name "IDE Controller" --add ide --controller PIIX4
@@ -90,6 +90,11 @@ VBoxManage modifyvm      $VMNAME --clipboard bidirectional
 VBoxManage modifyvm      $VMNAME --boot1 disk --boot2 dvd --boot3 net --boot4 none
 VBoxManage startvm       $VMNAME
 
+while ! VBoxManage showvminfo $VMNAME | grep -q 'State:.*powered off' ; do
+  sleep 60
+done
+
 VBoxManage modifyhd --compact $VMNAME.vdi
+VBoxManage modifyvm $VMNAME --memory 1024 --cpus 1 --ioapic off --vram 32
 rm -f $VMNAME.ova
 VBoxManage export $VMNAME --output $VMNAME.ova

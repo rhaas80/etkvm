@@ -1,30 +1,209 @@
-#!/bin/sh
+#!/bin/bash
 
 ### BEGIN INIT INFO
 # Provides:       postseed
-# Required-Start: $local_fs $remote_fs
+# Required-Start: $local_fs $remote_fs $network
 # Required-Stop:
 # X-Start-Before:
 # Default-Start:  2 3 4 5
 # Default-Stop:
 ### END INIT INFO
 
-# purge packages only needed to compile virtualbox module
-apt-get install -y linux-headers-686-pae virtualbox-guest-dkms/sid virtualbox-guest-utils/sid virtualbox-guest-x11/sid
-apt-get remove -y --purge linux-headers-686-pae
-apt-get autoremove -y --purge
-apt-get autoclean
-apt-get clean
-
 update-rc.d postseed remove
 
+sleep 10  # be extra sure networking is up
+set -e
+
+# need to fork() in order to avoid systemd's startup timeout
+(
+
+# TODO: make this /dev/null once everything works
+exec &>/var/log/postseed.log
+
+sudo -u et bash <<"EOF"
+# build VisIt first since it uses lots of disk space while building
+if ! [ -d $HOME/visit2_12_3* ] ; then
+  cd $HOME
+  mkdir build_visit_2.12.3
+  cd build_visit_2.12.3
+  # this requires libgl-dev
+  wget http://portal.nersc.gov/project/visit/releases/2.12.3/build_visit2_12_3
+  chmod u+x build_visit2_12_3
+  # apparently the first version that wuld clealy build with gcc 6.2 is 2.12.3
+  # (https://elist.ornl.gov/pipermail/visit-developers/2016-November/016433.html)
+  # Rob says that minor versions (patchlevels really) are guaranteed compatible
+  # among server and client
+  echo yes | VTK_EXTRA_OPTIONS=-DVTK_USE_64BIT_IDS:BOOL=yes EXTRA_QT_FLAGS=-no-openssl QT_CXXFLAGS=-std=gnu++98 ./build_visit2_12_3 --hdf5 --silo --zlib --cflag -Wno-narrowing --cxxflag -Wno-narrowing --makeflags -j12
+  # need to reclaims some space, otherwise make package runs out of disk space
+  rm -rf *.tar.gz *.zip hdf5* Imaging* numpy* Python* qt-everywhere* qwt* requests* setuptools* silo* VTK* zlib*
+  cd visit2.12.3/src
+  make package
+  tar -C $HOME -xf visit2.12.3.*.tar.gz
+  cd $HOME
+  find visit2_12_3*/ | while read fn ; do if file "$fn" | grep -q 'ELF 32-bit.*not stripped' ;  then strip "$fn" ; fi ; done
+  cat >Desktop/visit <<"EOT"
+#!/bin/sh
+exec $HOME/visit2_12_3*/bin/visit
+EOT
+  chmod u+x Desktop/visit
+  rm -rf -rf build_visit_2.12.3/
+fi
+
+# install pyCBC, this needs >1GB of RAM
+if true ; then
+# somwhow a sub-schell messes with the outer shell, so we start a new process
+# for pyCBC
+bash <<"EOC"
+cd $HOME
+
+mkdir pyCBC
+cd pyCBC/
+
+sudo apt-get install python-virtualenv virtualenv
+virtualenv --system-site-packages $PWD
+. $PWD/bin/activate
+
+sudo apt-get install python-dev libpython2.7-dev
+sudo apt-get install python-nose
+sudo apt-get install python-h5py
+sudo apt-get install fftw3 fftw3-dev
+sudo apt-get install python-unittest2 cython python-cjson python-decorator
+sudo apt-get install python-numpy
+sudo apt-get install libssl-dev
+sudo apt-get install python-m2crypto
+
+mkdir src
+
+cd $VIRTUAL_ENV/src
+wget http://lappweb.in2p3.fr/virgo/FrameL/libframe-8.30.tar.gz
+tar xf libframe-8.30.tar.gz 
+cd libframe-8.30
+./configure --prefix $VIRTUAL_ENV/opt/libframe-8.30
+make -j2 install
+
+cd $VIRTUAL_ENV/src
+wget http://software.ligo.org/lscsoft/source/metaio-8.4.0.tar.gz
+tar xf metaio-8.4.0.tar.gz 
+cd metaio-8.4.0/
+./configure --prefix $VIRTUAL_ENV/opt/metaio-8.4.0/
+make -j2 install
+
+cd $VIRTUAL_ENV/src
+git clone https://github.com/lscsoft/lalsuite.git
+cd lalsuite/
+git checkout lalsuite_o2_branch
+sudo apt-get install autoconf automake
+./00boot 
+sudo apt-get install swig
+LDFLAGS="-L$VIRTUAL_ENV/opt/libframe-8.30/lib -L$VIRTUAL_ENV/opt/metaio-8.4.0/lib" CPATH="$VIRTUAL_ENV/opt/libframe-8.30/include:$VIRTUAL_ENV/opt/metaio-8.4.0/include" ./configure --prefix=${VIRTUAL_ENV}/opt/lalsuite --enable-swig-python --disable-lalstochastic --disable-lalxml --disable-lalinference --disable-laldetchar --disable-lalapps --with-hdf5=/usr/bin/h5cc
+DFLAGS="-L$VIRTUAL_ENV/opt/libframe-8.30/lib -L$VIRTUAL_ENV/opt/metaio-8.4.0/lib" CPATH="$VIRTUAL_ENV/opt/libframe-8.30/include:$VIRTUAL_ENV/opt/metaio-8.4.0/include" make -j1
+LDFLAGS="-L$VIRTUAL_ENV/opt/libframe-8.30/lib -L$VIRTUAL_ENV/opt/metaio-8.4.0/lib" CPATH="$VIRTUAL_ENV/opt/libframe-8.30/include:$VIRTUAL_ENV/opt/metaio-8.4.0/include" make -j1 install
+cd ${VIRTUAL_ENV}/src
+echo 'source ${VIRTUAL_ENV}/opt/lalsuite/etc/lalsuite-user-env.sh' >> ${VIRTUAL_ENV}/bin/activate
+deactivate
+source $HOME/pyCBC/bin/activate
+
+sudo apt-get install python-mako python-markupsafe python2.7-stdlib python-certifi python-chardet python-emcee python-idna python-mpld3 python-requests python-urllib3
+pip install pyCBC
+
+rm -rf ${VIRTUAL_ENV}/src
+deactivate
+EOC
+fi
+
+if true ; then 
 # install ET 2016_11, do this after isntallation finishes so that eg network is
 # correct
-sudo -u et bash <<"EOF"
-cd /home/et
-
-RELEASE=master
+cd $HOME
+RELEASE=ET_2017_06
 wget --no-check-certificate https://github.com/gridaphobe/CRL/raw/$RELEASE/GetComponents
+patch -p0 <<"EOP"
+--- GetComponents     	2017-07-22 15:50:45.610786870 -0500
++++ GetComponents	2017-07-22 15:50:19.254786870 -0500
+@@ -1482,7 +1482,7 @@
+ 
+         # clone the git repo
+         elsif ( !-e $repo_loc ) {
+-            $cmd = "$git clone$shallow $url $repo_loc";
++            $cmd = "$git clone -b ET_2017_06$shallow $url $repo_loc";
+             my ( $err, $out ) = run_command($cmd);
+             if ($err) {
+                 my $log = "Could not checkout module $checkout\n";
+@@ -1495,73 +1495,6 @@
+                 return $err;
+             }
+             
+-            # determine if we need a branch or tag checkout
+-            if ( defined $component{"REPO_BRANCH"} ) {
+-                @branches = split(/, /, $component{"REPO_BRANCH"});
+-                my $real_branches = `cd $repo_loc && $git tag -l`;
+-                for $branch (@branches) {
+-                    # determine if $branch is actually a tag
+-                    if ( $real_branches =~ /^$branch/m ) {
+-                        $tag = $branch;
+-                        $branch = undef;
+-                    }
+-            
+-                    if ( defined $branch ) {
+-                        $cmd = "cd $repo_loc && "
+-                          . "$git checkout --track -b $branch origin/$branch";
+-                        if ( $branch eq 'master' ) {
+-                            # fix for master branch
+-                            $cmd = "cd $repo_loc && $git checkout master";
+-                        }
+-                        my ( $err, $out ) = run_command($cmd);
+-                        if ($err) {
+-                            my $new;
+-                            if ( -e "$repo_loc.branch.failed" ) {
+-                                my @times = glob "$repo_loc.branch.failed*";
+-                                $new = "$repo_loc.branch.failed."
+-                                        . scalar @times;
+-                            } else {
+-                                $new = "$repo_loc.branch.failed"
+-                            }
+-                            run_command("mv $repo_loc $new");
+-                            ${ $updated_git_repos{$git_repo} } = -1;
+-                            my $log =
+-                                "Could not checkout $checkout, "
+-                              . "unable to switch to branch $branch. "
+-                              . "Any existing symlinks to $checkout will be "
+-                              . "broken";
+-                            WARN($log);
+-                            lock( @components_error );
+-                            push( @components_error, $checkout );
+-                            return $err;
+-                        }
+-                    } elsif ( defined $tag ) {
+-                        $cmd = "cd $repo_loc && $git checkout -b $tag origin/$tag";
+-                        my ( $err, $out ) = run_command($cmd);
+-                        if ($err) {
+-                            my $new;
+-                            if ( -e "$repo_loc.branch.failed" ) {
+-                                my @times = glob "$repo_loc.branch.failed*";
+-                                $new = "$repo_loc.branch.failed."
+-                                        . scalar @times;
+-                            } else {
+-                                $new = "$repo_loc.branch.failed"
+-                            }
+-                            run_command("mv $repo_loc $new");
+-                            ${ $updated_git_repos{$git_repo} } = -1;
+-                            my $log =
+-                                "Could not checkout $checkout, "
+-                              . "unable to switch to tag $branch. "
+-                              . "Any existing symlinks to $checkout will be "
+-                              . "broken";
+-                            WARN($log);
+-                            lock( @components_error );
+-                            push( @components_error, $checkout );
+-                            return $err;
+-                        }
+-                    }
+-                }
+-            }
+             ${ $updated_git_repos{$git_repo} } = 1;
+         }
+ 
+EOP
 chmod +x GetComponents
 ./GetComponents -p -a --shallow https://bitbucket.org/einsteintoolkit/manifest/raw/$RELEASE/einsteintoolkit.th
 cd Cactus
@@ -45,16 +224,53 @@ mkdir -p ~/simulations
 set +e
 ( time ./simfactory/bin/sim build --mdbkey make "make -j $cores" --thornlist ./thornlists/et.th ) >ET_build.log 2>&1
 set -e
-find configs/sim \( -name \*.a -or -name \*.d \) -delete
+test -x exe/cactus_sim && rm ET_build.log # remove log if all is well
+find configs/sim/lib configs/sim/build \( -name \*.a -or -name \*.d \) -delete
 rm -rf exe/sim exe/cactus_sim configs/sim/piraha
+fi
 
-cd /home/et
-cp -r --reflink=always Cactus Cactus.original
 EOF
 
+# make a read-only backup using cow reflinks
+cp -a --reflink=always /home/et /home/et-backup
+chmod u=rX -R /home/et-backup
+
+# add sid, making sure it is only used on request
+echo "deb http://ftp.debian.org/debian sid main contrib" >>/etc/apt/sources.list
+cat >/etc/apt/preferences.d/sid <<EOF
+Package: *
+Pin: release a=unstable
+Pin-Priority: -1
+EOF
+apt-get update
+
+# virtualbox stuff is only in sid and I could not figure out how to preseed
+# their installation
+apt-get install -y linux-headers-686-pae virtualbox-guest-dkms/sid virtualbox-guest-utils/sid virtualbox-guest-x11/sid
+
+# deduplicate all files just in case I missed some (rmlint is in buster as well
+# but not in stretch, I could likely use a rdfine / clone combination)
+cd /tmp
+apt-get install -y rmlint/sid
+rmlint -T df --config=sh:handler=clone /bin /etc /home /lib /opt /root /sbin /tmp /usr /var >rmlint.log
+echo yes | bash rmlint.sh &>>rmlint.log &&
+rm -f rmlint.sh rmlint.json rmlint.log
+
+# purge packages only needed to compile virtualbox module and VisIt
+apt-get remove -y --purge linux-headers-686-pae linux-headers-4.9.0-3-686-pae libgl-dev libgl1-mesa-dev libxt-dev file rmlint
+apt-get autoremove -y --purge
+apt-get autoclean
+apt-get clean
+rm -rf /var/lib/apt/lists/* /var/log/*
+
 # wipe unused blocks to zero
-dd if=/dev/zero bs=1M of=/zero
+dd if=/dev/zero bs=1M of=/zero || true
 sync ; sync ; sync
 rm /zero
 
 shutdown -h now
+
+) </dev/null &
+disown $!
+
+exit 0
